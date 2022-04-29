@@ -1,25 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import {useEffect, useRef, useState} from "react";
+import {authService, userService} from "./services";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+const App = () => {
+    const [token, setToken] = useState(null);
+    const input = useRef();
+    useEffect(() => {
+        authService.login().then(({data: {access}}) => {
+            localStorage.setItem('token', access)
+            setToken(access)
+        })
+    }, [])
+
+    const save = async () => {
+        const file = input.current.files[0];
+        const formData = new FormData();
+        formData.append('avatar', file, file.name)
+        await userService.addAvatar(formData)
+    }
+    return (
+        <div>
+            {token && <div>{token}</div>}
+            <input type="file" ref={input}/>
+            <button onClick={() => save()}>save</button>
+        </div>
+    );
+};
 
 export default App;
